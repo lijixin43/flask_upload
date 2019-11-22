@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>FLASK MUTIPLE UPLOAD</title>
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}">
+<style type="text/css">
+        .rot1 {
+            -moz-transform: rotate(90deg);
+            -webkit-transform: rotate(90deg);
+            transform: rotate(90deg);
+            filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=1);
+            -ms-filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=1);
+        }
+        .rot2 {
+            -moz-transform: rotate(180deg);
+            -webkit-transform: rotate(180deg);
+            transform: rotate(180deg);
+            filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=2);
+            -ms-filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=2);
+        }
+        .rot3 {
+            -moz-transform: rotate(270deg);
+            -webkit-transform: rotate(270deg);
+            transform: rotate(270deg);
+            filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=3);
+            -ms-filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=3);
+        }
+
+    </style>
+</head>
+<body>
+
+<h1>Upload Successful!</h1>
+
+Here are the files you just uploaded. Your form data was discarded in this demo
+app, but if you check your terminal window you can see that all their names and
+values were submitted to the server.<p>
+
+<a href="{{ url_for('index') }}">Back to front page</a><p>
+<div class="upload_file" style="width: 1200px">
+<div  class="upload_file_left" style="float:left;width: 700px">
+
+{% for file in files %}
+    <h2>图片名称:{{ file}}</h2>
+{% endfor %}
+
+<div id="imageView_container"  style="overflow: hidden; position: relative;position: relative;width:690px;height: 500px;border: 2px solid #000000;">
+<div id="mask">
+{#{% for file in files %}#}
+{#    <h2>{{ file }}</h2>#}
+{#    <img id="rotImg" src="{{ url_for('static', filename='uploads/{}/{}'.format(uuid, file)) }}"   style="cursor: move;visibility: visible;position: absolute;#}
+{#    max-width:100%;max-height:100%;">#}
+{#{% endfor %}#}
+</div>
+{#<div style="width:600px;height:400px;margin-left: -150px;margin-top: -150px;overflow:scroll;">#}
+{# <canvas id="myCanvas"  width="600" height="400" style="margin-left: 50px;margin-top:50px;position: absolute;border:1px solid #d3d3d3;">#}
+{#     Your browser does not support the HTML5 canvas tag.#}
+{# </canvas>#}
+{#</div>#}
+
+</div>
+<div style="padding-top:5px;margin-left: 170px;margin-top:5px">
+{#    <input type="button" value="放大" onclick="zoomIn()">#}
+{#    <input type="button" value="缩小" onclick="zoomOut();">#}
+{#    <input type="button" value="放大" onclick="imgToSize(1.1)">#}
+{#    <input type="button" value="缩小" onclick="imgToSize(0.8);">#}
+{#    <input type="button" value="向右旋转" id="rotRight">#}
+{#    <input type="button" value="向左旋转" id="rotLeft">#}
+    <input type="button" value="放大" onclick="zoomIn()" />
+    <input type="button" value="缩小" onclick="zoomOut()" />
+    <input type="button" value="最佳显示" onclick="stretchOptimally()" />
+    <input type="button" value="顺时针旋转90" onclick="rotateClockwise()" />
+    <input type="button" value="逆时针旋转90" onclick="rotateAntiClockwise()" />
+    <br />
+
+    <br />
+    <span style="display:inline;margin-left:130px">
+                旋转<input type="text" style="width:60px" id="rotateTo" value="15" />度<input type="button" value="旋转" onclick="rotateTo()" />
+    </span>
+</div>
+</div>
+<div class="upload_file_right" style="float:left;width:500px;">
+    <h1>识别结果</h1>
+    <input type="text" placeholder="识别结果" style="width: 450px;height: 300px;text-align: center">
+</div>
+
+</div>
+<script src="{{ url_for('static', filename='js/jquery-1.10.2.js') }}"></script>
+<script src="{{ url_for('static', filename='js/jquery-browser.js') }}"></script>
+<script src="{{ url_for('static', filename='js/jquery.imageView.js') }}"></script>
+<script src="{{ url_for('static', filename='js/fImageView.min.js') }}"></script>
+<script type="text/javascript">
+
+    $(function () {
+    var param = {
+        right: document.getElementById("rotRight"),
+        left: document.getElementById("rotLeft"),
+        img: document.getElementById("rotImg"),
+        rot: 0
+    };
+{#    var fun = {#}
+{#        right: function () {#}
+{#            param.rot += 1;#}
+{#            param.img.className = "rot" + param.rot;#}
+{#            if (param.rot === 3) {#}
+{#                param.rot = -1;#}
+{#            }#}
+{#        },#}
+{#        left: function () {#}
+{#            param.rot -= 1;#}
+{#            if (param.rot === -1) {#}
+{#                param.rot = 3;#}
+{#            }#}
+{#            param.img.className = "rot" + param.rot;#}
+{#        },#}
+{#    };#}
+{#    param.right.onclick = function () {#}
+{#        fun.right();#}
+{#        return false;#}
+{#    };#}
+{#    param.left.onclick = function () {#}
+{#        fun.left();#}
+{#        return false;#}
+{#    };#}
+
+
+{#    $('#imageView_container').imageView({#}
+{#        width: 690, height: 500#}
+{#    });#}
+
+    });
+
+    var size = 0;
+
+    //放大缩小图片
+    function imgToSize(size) {
+        var img = $("#rotImg");
+        var oWidth = img.width(); //取得图片的实际宽度
+        var oHeight = img.height(); //取得图片的实际高度
+        let tmp=110;
+        if (size > 1){
+            document.querySelector("#rotImg").style = "cursor: move;visibility: visible;position: absolute;top:0px;left:168.5px" ;
+            img.width(oWidth * 1.1);
+            img.height(oHeight *  1.1 );
+
+        }else{
+            img.width(oWidth /1.1);
+            img.height(oHeight / 1.1 );
+        }
+
+{#        img.width(oWidth + size);#}
+{#        img.height(oHeight + size / oWidth * oHeight);#}
+
+    }
+    //画出一个矩形框
+{#    function draw(x, y, wid, hei){#}
+{#    var c=document.getElementById("myCanvas");#}
+{#    var cxt=c.getContext("2d");#}
+{#    var img = new Image();#}
+{#    img.src="http://images.cnblogs.com/cnblogs_com/html5test/359114/r_test.jpg"#}
+{#        img.onload = function(){ //onload必须使用#}
+{#            var ctx = cvs.getContext('2d');#}
+{#            ctx.drawImage(this, 0, 0);#}
+{#    }#}
+{#    cxt.drawImage(img, 0, 0, 700, 400);#}
+{##}
+{#    cxt.fillStyle = "rgba(255, 0, 0, 0.1)";#}
+{#    cxt.fillRect(x, y, wid, hei);#}
+{##}
+{#    cxt.strokeStyle = "rgb(0, 0, 0)"; //"rgb(0, 0, 0)";#}
+{#    cxt.strokeRect(x, y, wid, hei);#}
+{#  }#}
+{##}
+{#  draw(20, 20, 200, 100);#}
+    //转成base64码
+    var maskObj = document.getElementById('mask');
+    var imgObjs = maskObj.children;
+    for(var i=0;i<imgObjs.length;i++){
+        imgObjs[i].onclick = function (){
+            console.log(this.src)
+            console.log(this.getAttribute("src"))
+        }
+    }
+
+    //旋转图片
+    var panel = new Fei.fImagePanel({
+        images: ['{{ url_for('static', filename='uploads/{}/{}'.format(uuid,files[0]))}}']
+     }).render(document.getElementById('imageView_container'));
+
+    function stretchOptimally() {
+        panel.stretchOptimally().centerImage().doChange();
+    }
+    //放大
+    function zoomIn() {
+        panel.scale(1.1).doChange();
+    }
+    //缩小
+    function zoomOut() {
+        panel.scale(0.9).doChange();
+    }
+    //向右旋转
+    function rotateClockwise() {
+        panel.rotate(90).doChange();
+    }
+    //向左旋转
+    function rotateAntiClockwise() {
+        panel.rotate(-90).doChange();
+    }
+    //旋转任意角度
+    function rotateTo() {
+        var val = parseInt(document.getElementById('rotateTo').value, 10);
+
+        panel.rotate(val).doChange();
+    }
+
+    //画一个矩形框
+{#    const c=document.getElementById("myCanvas");#}
+{#    const ctx=c.getContext("2d");#}
+{#    const scaleStep=1.05;#}
+{#    const minWidth=600,minHeight=400,maxWidth=700,maxHeight=500;#}
+{#    const img = document.getElementById('img');#}
+{#    ctx.drawImage(img,0,0);#}
+{#    const img=document.createElement('img');#}
+{#    const elementWidth=600,elementHeight=400;#}
+{#    let startx,//起始x坐标#}
+{#        starty,//起始y坐标#}
+{#        flag,//是否点击鼠标的标志#}
+{#        x,#}
+{#        y,#}
+{#        leftDistance,#}
+{#        topDistance,#}
+{#        op=0,//op操作类型 0 无操作 1 画矩形框 2 拖动矩形框#}
+{#        scale=1,#}
+{#        type=0;#}
+{#    let layers=[];//图层#}
+{#    let currentR;//当前点击的矩形框#}
+{#    //将上传文件的地址写进canvas标签#}
+{##}
+{#    img.src='https://fuss10.elemecdn.com/3/28/bbf893f792f03a54408b3b7a7ebf0jpeg.jpeg';#}
+{#    img.onload=function(){#}
+{#        c.style.backgroundImage="url("+img.src+")";#}
+{#        c.style.backgroundSize=`${c.width}px ${c.height}px`;#}
+{#    }#}
+{#    function resizeLeft(rect){#}
+{#        c.style.cursor="w-resize";#}
+{#        if(flag&&op==0){op=3;}#}
+{#        if(flag&&op==3){#}
+{#            if(!currentR){currentR=rect}#}
+{#            currentR.x1=x#}
+{#            currentR.width=currentR.x2-currentR.x1#}
+{#        }#}
+{#    }#}
+{#    function resizeTop(rect){#}
+{#        c.style.cursor="s-resize";#}
+{#        if(flag&&op==0){op=4;}#}
+{#        if(flag&&op==4){#}
+{#            if(!currentR){currentR=rect}#}
+{#            currentR.y1=y#}
+{#            currentR.height=currentR.y2-currentR.y1#}
+{#        }#}
+{#    }#}
+{#    function resizeWidth(rect){#}
+{#        c.style.cursor="w-resize";#}
+{#        if(flag&&op==0){op=5;}#}
+{#        if(flag&&op==5){#}
+{#            if(!currentR){currentR=rect}#}
+{#            currentR.x2=x#}
+{#            currentR.width=currentR.x2-currentR.x1#}
+{#        }#}
+{#    }#}
+{#    function resizeHeight(rect){#}
+{#        c.style.cursor="s-resize";#}
+{#        if(flag&&op==0){op=6;}#}
+{#        if(flag&&op==6){#}
+{#            if(!currentR){currentR=rect}#}
+{#            currentR.y2=y#}
+{#            currentR.height=currentR.y2-currentR.y1#}
+{#        }#}
+{#    }#}
+{#    function resizeLT(rect){#}
+{#        c.style.cursor="se-resize";#}
+{#        if(flag&&op==0){op=7;}#}
+{#        if(flag&&op==7){#}
+{#            if(!currentR){currentR=rect}#}
+{#            currentR.x1=x#}
+{#            currentR.y1=y#}
+{#            currentR.height=currentR.y2-currentR.y1#}
+{#            currentR.width=currentR.x2-currentR.x1#}
+{#        }#}
+{#    }#}
+{#    function resizeWH(rect){#}
+{#        c.style.cursor="se-resize";#}
+{#        if(flag&&op==0){op=8;}#}
+{#        if(flag&&op==8){#}
+{#            if(!currentR){currentR=rect}#}
+{#            currentR.x2=x#}
+{#            currentR.y2=y#}
+{#            currentR.height=currentR.y2-currentR.y1#}
+{#            currentR.width=currentR.x2-currentR.x1#}
+{#        }#}
+{#    }#}
+{#    function resizeLH(rect){#}
+{#        c.style.cursor="ne-resize";#}
+{#        if(flag&&op==0){op=9;}#}
+{#        if(flag&&op==9){#}
+{#            if(!currentR){currentR=rect}#}
+{#            currentR.x1=x#}
+{#            currentR.y2=y#}
+{#            currentR.height=currentR.y2-currentR.y1#}
+{#            currentR.width=currentR.x2-currentR.x1#}
+{#        }#}
+{#    }#}
+{#    function resizeWT(rect){#}
+{#        c.style.cursor="ne-resize";#}
+{#        if(flag&&op==0){op=10;}#}
+{#        if(flag&&op==10){#}
+{#            if(!currentR){currentR=rect}#}
+{#            currentR.x2=x#}
+{#            currentR.y1=y#}
+{#            currentR.height=currentR.y2-currentR.y1#}
+{#            currentR.width=currentR.x2-currentR.x1#}
+{#        }#}
+{#    }#}
+{#    function reshow(x,y){#}
+{#            let allNotIn=1;#}
+{#            layers.forEach(item=>{#}
+{#                ctx.beginPath();#}
+{#                ctx.rect(item.x1,item.y1,item.width,item.height);#}
+{#                ctx.strokeStyle=item.strokeStyle#}
+{#                if(x>=(item.x1-25/scale)&&x<=(item.x1+25/scale)&&y<=(item.y2-25/scale)&&y>=(item.y1+25/scale)){#}
+{#                        resizeLeft(item);#}
+{#                }else if(x>=(item.x2-25/scale)&&x<=(item.x2+25/scale)&&y<=(item.y2-25/scale)&&y>=(item.y1+25/scale)){#}
+{#                        resizeWidth(item);#}
+{#                }else if(y>=(item.y1-25/scale)&&y<=(item.y1+25/scale)&&x<=(item.x2-25/scale)&&x>=(item.x1+25/scale)){#}
+{#                        resizeTop(item);#}
+{#                }else if(y>=(item.y2-25/scale)&&y<=(item.y2+25/scale)&&x<=(item.x2-25/scale)&&x>=(item.x1+25/scale)){#}
+{#                        resizeHeight(item);#}
+{#                }else if(x>=(item.x1-25/scale)&&x<=(item.x1+25/scale)&&y<=(item.y1+25/scale)&&y>=(item.y1-25/scale)){#}
+{#                        resizeLT(item);#}
+{#                }else if(x>=(item.x2-25/scale)&&x<=(item.x2+25/scale)&&y<=(item.y2+25/scale)&&y>=(item.y2-25/scale)){#}
+{#                        resizeWH(item);#}
+{#                }else if(x>=(item.x1-25/scale)&&x<=(item.x1+25/scale)&&y<=(item.y2+25/scale)&&y>=(item.y2-25/scale)){#}
+{#                        resizeLH(item);#}
+{#                }else if(x>=(item.x2-25/scale)&&x<=(item.x2+25/scale)&&y<=(item.y1+25/scale)&&y>=(item.y1-25/scale)){#}
+{#                        resizeWT(item);#}
+{#                }#}
+{#                if(ctx.isPointInPath(x*scale,y*scale)){#}
+{#                    render(item);#}
+{#                    allNotIn=0;#}
+{#                }#}
+{#                ctx.stroke();#}
+{#            })#}
+{#        if(flag&&allNotIn&&op<3){#}
+{#            op=1#}
+{#        }#}
+{##}
+{#    }#}
+{#    function render(rect){#}
+{#        c.style.cursor="move";#}
+{#        if(flag&&op==0){op=2;}#}
+{#        if(flag&&op==2){#}
+{#            if(!currentR){currentR=rect}#}
+{#            currentR.x2+=x-leftDistance-currentR.x1#}
+{#            currentR.x1+=x-leftDistance-currentR.x1#}
+{#            currentR.y2+=y-topDistance-currentR.y1#}
+{#            currentR.y1+=y-topDistance-currentR.y1#}
+{#        }#}
+{#    }#}
+{#    function isPointInRetc(x,y){#}
+{#        let len=layers.length;#}
+{#        for(let i=0;i<len;i++){#}
+{#            if(layers[i].x1<x&&x<layers[i].x2&&layers[i].y1<y&&y<layers[i].y2){#}
+{#                return layers[i];#}
+{#            }#}
+{#        }#}
+{#    }#}
+{#    function fixPosition(position){#}
+{#        if(position.x1>position.x2){#}
+{#            let x=position.x1;#}
+{#            position.x1=position.x2;#}
+{#            position.x2=x;#}
+{#        }#}
+{#        if(position.y1>position.y2){#}
+{#            let y=position.y1;#}
+{#            position.y1=position.y2;#}
+{#            position.y2=y;#}
+{#        }#}
+{#        position.width=position.x2-position.x1#}
+{#        position.height=position.y2-position.y1#}
+{#        if(position.width<50||position.height<50){#}
+{#            position.width=60;#}
+{#            position.height=60;#}
+{#            position.x2+=position.x1+60;#}
+{#            position.y2+=position.y1+60;#}
+{#        }#}
+{#        return position#}
+{#    }#}
+{#    let mousedown=function(e){#}
+{#        startx=(e.pageX-c.offsetLeft+c.parentElement.scrollLeft)/scale;#}
+{#        starty=(e.pageY-c.offsetTop+c.parentElement.scrollTop)/scale;#}
+{#        currentR=isPointInRetc(startx,starty);#}
+{#        if(currentR){#}
+{#            leftDistance=startx-currentR.x1;#}
+{#            topDistance=starty-currentR.y1;#}
+{#        }#}
+{#        ctx.strokeRect(x,y,0,0);#}
+{#        ctx.strokeStyle="#0000ff";#}
+{#        flag=1;#}
+{#    }#}
+{#    let mousemove=function(e){#}
+{#        x=(e.pageX-c.offsetLeft+c.parentElement.scrollLeft)/scale;#}
+{#        y=(e.pageY-c.offsetTop+c.parentElement.scrollTop)/scale;#}
+{#        ctx.save();#}
+{#        ctx.setLineDash([5])#}
+{#        c.style.cursor="default";#}
+{#        ctx.clearRect(0,0,elementWidth,elementHeight)#}
+{#        if(flag&&op==1){#}
+{#            ctx.strokeRect(startx,starty,x-startx,y-starty);#}
+{#        }#}
+{#        ctx.restore();#}
+{#        reshow(x,y);#}
+{#    }#}
+{#    let mouseup=function(e){#}
+{#        if(op==1){#}
+{#            layers.push(fixPosition({#}
+{#                x1:startx,#}
+{#                y1:starty,#}
+{#                x2:x,#}
+{#                y2:y,#}
+{#                strokeStyle:'#0000ff',#}
+{#                type:type#}
+{#            }))#}
+{#        }else if(op>=3){#}
+{#            fixPosition(currentR)#}
+{#        }#}
+{#        currentR=null;#}
+{#        flag=0;#}
+{#        reshow(x,y);#}
+{#        op=0;#}
+{#    }#}
+{#    c.onmouseleave=function(){#}
+{#        c.onmousedown=null;#}
+{#        c.onmousemove=null;#}
+{#        c.onmouseup=null;#}
+{#    }#}
+{#    c.onmouseenter=function(){#}
+{#        c.onmousedown=mousedown;#}
+{#        c.onmousemove=mousemove;#}
+{#        document.onmouseup=mouseup;#}
+{#    }#}
+
+
+</script>
+</body>
+</html>
